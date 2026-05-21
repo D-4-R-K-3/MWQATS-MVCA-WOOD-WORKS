@@ -9,7 +9,6 @@ function getProjectRef(): string {
 function injectTokenFromHeader(request: NextRequest): void {
   const token = request.headers.get('x-sb-token');
   if (!token) return;
-  // Always set the token cookie from header, prioritizing it for API routes
   request.cookies.set(`sb-${getProjectRef()}-auth-token`, token);
 }
 
@@ -31,6 +30,12 @@ const ROLE_ROUTES: Record<string, string[]> = {
   ],
 };
 
+// Routes ONLY customers can access (admin/staff blocked)
+const CUSTOMER_ONLY_ROUTES = [
+  '/customer-dashboard/shop',
+  '/customer-dashboard/order-status',
+];
+
 const ROLE_HOME: Record<string, string> = {
   admin: '/admin-dashboard',
   staff: '/staff-dashboard',
@@ -44,6 +49,7 @@ const PUBLIC_PATHS = [
   '/favicon.ico',
   '/assets',
   '/api/auth',
+  '/landing',
 ];
 
 export async function middleware(request: NextRequest) {
@@ -75,44 +81,36 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse;
   }
 
-  try {
-    // Allow root path (redirect to login if not authenticated)
-    if (pathname === '/') {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        const url = request.nextUrl.clone();
-        url.pathname = '/sign-up-login-screen';
-        return NextResponse.redirect(url);
-      }
-      // Redirect to role-based home
-      const role = user.user_metadata?.role || 'staff';
-      const url = request.nextUrl.clone();
-      url.pathname = ROLE_HOME[role] || '/staff-dashboard';
-      return NextResponse.redirect(url);
-    }
+  // Root path: show landing page (no auth required)
+  if (pathname === '/') {
+    return supabaseResponse;
+  }
 
+  try {
     const { data: { user }, error } = await supabase.auth.getUser();
 
     if (error || !user) {
-      // Don't immediately reject - check if this is a transient auth issue
-      // Let client-side auth handle it if session just hasn't synced to server yet
-      // Only redirect if it's a clear unauthenticated state
       const hasCookies = request.cookies.getAll().some((c) => c.name.includes('auth'));
-      
       if (!hasCookies) {
-        // No auth cookies at all - definitely not authenticated
         const url = request.nextUrl.clone();
         url.pathname = '/sign-up-login-screen';
         return NextResponse.redirect(url);
       }
-      // Has cookies but getUser failed - likely a transient issue
-      // Pass through and let client handle it
       return supabaseResponse;
     }
 
     const userRole = user.user_metadata?.role || 'staff';
 
-    // Check if user is accessing a route allowed for their role
+    // Enforce: admin/staff CANNOT access customer-only ordering routes
+    if (CUSTOMER_ONLY_ROUTES.some(route => pathname.startsWith(route))) {
+      if (userRole !== 'customer') {
+        const url = request.nextUrl.clone();
+        url.pathname = ROLE_HOME[userRole] || '/staff-dashboard';
+        return NextResponse.redirect(url);
+      }
+    }
+
+    // Check role-based route access
     const allowedPrefixes = ROLE_ROUTES[userRole] || [];
     const isAllowed = allowedPrefixes.some((prefix) => pathname.startsWith(prefix));
 
@@ -124,7 +122,6 @@ export async function middleware(request: NextRequest) {
 
     return supabaseResponse;
   } catch (error) {
-    // If middleware check fails, don't block - let client handle auth
     console.warn('Middleware auth check error (non-blocking):', error);
     return supabaseResponse;
   }

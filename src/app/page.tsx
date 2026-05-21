@@ -1,6 +1,6 @@
 import React from 'react';
-import LoginPageClient from './sign-up-login-screen/components/LoginPageClient';
+import LandingPage from './landing/page';
 
 export default function RootPage() {
-  return <LoginPageClient />;
+  return <LandingPage />;
 }

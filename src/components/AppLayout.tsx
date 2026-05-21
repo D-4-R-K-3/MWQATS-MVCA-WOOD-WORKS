@@ -17,13 +17,14 @@ export default function AppLayout({ children, role, currentPath }: AppLayoutProp
   const pathname = usePathname();
   const { user, loading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState<boolean>(() => {
+  const [collapsed, setCollapsed] = useState<boolean>(false);
+
+  useEffect(() => {
     try {
-      return localStorage.getItem('sidebar.collapsed') === 'true';
-    } catch {
-      return false;
-    }
-  });
+      const stored = localStorage.getItem('sidebar.collapsed');
+      setCollapsed(stored === 'true');
+    } catch {}
+  }, []);
 
   useEffect(() => {
     try {
@@ -36,6 +37,11 @@ export default function AppLayout({ children, role, currentPath }: AppLayoutProp
       router.replace('/sign-up-login-screen');
     }
   }, [user, loading, router]);
+
+  // Close sidebar on route change (mobile)
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
 
   if (loading) {
     return (
@@ -52,17 +58,17 @@ export default function AppLayout({ children, role, currentPath }: AppLayoutProp
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Topbar role={role} onMenuToggle={() => setSidebarOpen(true)} />
-      <div className="flex pt-0 md:pt-0">
+      <Topbar role={role} onMenuToggle={() => setSidebarOpen(prev => !prev)} />
+      <div className="flex">
         <Sidebar
           role={role}
           currentPath={currentPath || pathname}
           open={sidebarOpen}
           collapsed={collapsed}
-          onToggleCollapse={() => setCollapsed((c) => !c)}
+          onToggleCollapse={() => setCollapsed(c => !c)}
           onClose={() => setSidebarOpen(false)}
         />
-        <main className="flex-1 min-h-screen py-6 px-4 lg:px-8 xl:px-10 2xl:px-16">
+        <main className={`flex-1 min-h-[calc(100vh-4rem)] py-6 px-4 lg:px-8 xl:px-10 2xl:px-16 transition-all duration-200`}>
           {children}
         </main>
       </div>
