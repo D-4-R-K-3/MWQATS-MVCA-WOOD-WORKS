@@ -51,6 +51,7 @@ const navByRole = {
     { label: 'Quality Scan (AI)', href: '/staff/quality-scan', icon: Camera },
     { label: 'AR Measurement', href: '/staff/ar-measurement', icon: Ruler },
     { label: 'Inventory', href: '/staff-dashboard/inventory', icon: ShoppingBag },
+    { label: 'Customer Chat', href: '/staff/chat', icon: MessageSquare },
   ],
   admin: [
     { label: 'Admin Overview', href: '/admin-dashboard', icon: LayoutDashboard },
@@ -58,6 +59,7 @@ const navByRole = {
     { label: 'User Management', href: '/admin/users', icon: Users },
     { label: 'Product Catalog', href: '/catalog', icon: Box },
     { label: 'Order Management', href: '/orders', icon: Package },
+    { label: 'Order Chat', href: '/admin/chat', icon: MessageSquare },
     { label: 'Inventory', href: '/admin/inventory', icon: Truck },
     { label: 'Team', href: '/admin/team', icon: Users },
     { label: 'Reports', href: '/admin/reports', icon: FileText },
@@ -69,7 +71,7 @@ const navByRole = {
     { label: 'My Orders', href: '/customer-dashboard', icon: Package },
     { label: 'Order Status', href: '/customer-dashboard/order-status', icon: ClipboardCheck },
     { label: 'Shop Products', href: '/customer-dashboard/shop', icon: ShoppingBag },
-    { label: 'Support', href: '/support', icon: MessageSquare },
+    { label: 'Chat Support', href: '/support', icon: MessageSquare },
   ],
 };
 

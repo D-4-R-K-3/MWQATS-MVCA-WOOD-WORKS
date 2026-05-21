@@ -38,6 +38,7 @@ export default function Topbar({ role, onMenuToggle }: TopbarProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const displayName = profile?.full_name || user?.user_metadata?.full_name || 'User';
   const initials = displayName
@@ -124,7 +125,12 @@ export default function Topbar({ role, onMenuToggle }: TopbarProps) {
     <header className="sticky top-0 z-60 w-full border-b border-border bg-card/95 backdrop-blur-sm">
       <div className="max-w-screen-2xl mx-auto flex h-16 items-center justify-between gap-4 px-4 lg:px-8 xl:px-10 2xl:px-16">
         <div className="flex items-center gap-3">
-          <button type="button" onClick={onMenuToggle} className="md:hidden btn-ghost p-2" aria-label="Open sidebar">
+          <button
+            type="button"
+            onClick={() => { onMenuToggle(); setMobileMenuOpen(v => !v); }}
+            className="md:hidden btn-ghost p-2 rounded-xl border border-border hover:bg-muted transition-all"
+            aria-label="Toggle navigation menu"
+          >
             <Menu size={18} />
           </button>
           <Link href="/" className="flex items-center gap-2">
