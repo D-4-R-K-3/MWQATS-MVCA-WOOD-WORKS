@@ -99,7 +99,22 @@ export async function middleware(request: NextRequest) {
       return supabaseResponse;
     }
 
-    const userRole = user.user_metadata?.role || 'staff';
+    // Fetch user role from user_profiles table
+    let userRole = 'staff'; // default fallback
+    try {
+      const { data: profileData } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle();
+      
+      if (profileData?.role) {
+        userRole = profileData.role;
+      }
+    } catch (err) {
+      console.warn('Failed to fetch user role from database:', err);
+      // Fall back to default 'staff' role
+    }
 
     // Enforce: admin/staff CANNOT access customer-only ordering routes
     if (CUSTOMER_ONLY_ROUTES.some(route => pathname.startsWith(route))) {

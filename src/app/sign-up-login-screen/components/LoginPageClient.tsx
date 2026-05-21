@@ -111,15 +111,19 @@ export default function LoginPageClient() {
       if (!result?.user) throw new Error('Login failed');
 
       showMessage('success', 'Signed in successfully');
-      let userRole = result.user.user_metadata?.role || 'staff';
 
-      await new Promise(resolve => setTimeout(resolve, 1200));
+      // Fetch user profile to get the role
+      const { data: profileData } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', result.user.id)
+        .maybeSingle();
 
-      try {
-        const { data: profileData } = await supabase.from('user_profiles').select('role').eq('id', result.user.id).single();
-        if (profileData?.role) userRole = profileData.role;
-      } catch {}
-
+      const userRole = profileData?.role || 'staff';
+      
+      setLoading(false);
+      
+      // Redirect to appropriate dashboard based on role
       router.push(roleRedirect[userRole] || '/staff-dashboard');
     } catch (error: any) {
       setLoading(false);
