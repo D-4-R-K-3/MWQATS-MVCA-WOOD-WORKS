@@ -17,6 +17,7 @@ interface NavButtonProps {
   external?: boolean;
   className?: string;
   showActiveIndicator?: boolean;
+  title?: string;
 }
 
 /**
@@ -34,6 +35,7 @@ export default function NavButton({
   external = false,
   className = '',
   showActiveIndicator = false,
+  title,
 }: NavButtonProps) {
   const { isActive, navigate } = useNavigation();
   const active = isActive(href);
@@ -75,7 +77,7 @@ export default function NavButton({
 
   if (external) {
     return (
-      <a href={href} onClick={handleClick} className={buttonClasses} target="_blank" rel="noopener noreferrer">
+      <a href={href} onClick={handleClick} className={buttonClasses} target="_blank" rel="noopener noreferrer" title={title}>
         {Icon && <Icon size={18} />}
         <span>{label}</span>
         {showActiveIndicator && active && <span className="ml-auto w-2 h-2 rounded-full bg-current" />}
@@ -84,7 +86,7 @@ export default function NavButton({
   }
 
   return (
-    <Link href={href} onClick={handleClick} className={buttonClasses}>
+    <Link href={href} onClick={handleClick} className={buttonClasses} title={title}>
       {Icon && <Icon size={18} />}
       <span>{label}</span>
       {showActiveIndicator && active && <span className="ml-auto w-2 h-2 rounded-full bg-current" />}

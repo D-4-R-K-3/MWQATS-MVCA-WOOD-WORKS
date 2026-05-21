@@ -47,18 +47,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const supabase = createClient();
 
   const fetchProfile = useCallback(async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-      if (!error && data) {
-        setProfile(data as UserProfile);
-      }
-    } catch {
-      // Profile may not exist yet
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (error) {
+      console.warn('Profile fetch failed:', error.message);
+      setProfile(null);
+      return;
     }
+
+    setProfile((data as UserProfile) || null);
   }, [supabase]);
 
   useEffect(() => {
@@ -150,13 +151,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const getUserProfile = async (): Promise<UserProfile | null> => {
     if (!user) return null;
+
     const { data, error } = await supabase
       .from('user_profiles')
       .select('*')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
+
     if (error) throw error;
-    return data as UserProfile;
+    return (data as UserProfile) || null;
   };
 
   const refreshProfile = async () => {

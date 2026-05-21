@@ -3,30 +3,45 @@ import React, { useState } from 'react';
 import { Play, Clock, AlertTriangle, Package, ChevronRight, CheckCircle2 } from 'lucide-react';
 import StatusBadge from '@/components/ui/StatusBadge';
 
-const initialTasks = [
+type TaskPriority = 'urgent' | 'normal' | 'low';
+type TaskStatus = 'active' | 'queued';
+
+interface AssignedTask {
+  id: string;
+  workpieceId: string;
+  name: string;
+  order: string;
+  stage: string;
+  priority: TaskPriority;
+  estimatedMin: number;
+  elapsedMin: number;
+  status: TaskStatus;
+  defectFlag: boolean;
+}
+
+const initialTasks: AssignedTask[] = [
   {
     id: 'task-wp2847',
     workpieceId: 'WP-2847',
     name: 'Oak Dining Table',
     order: 'ORD-4421',
     stage: 'Sanding',
-    priority: 'urgent' as const,
+    priority: 'urgent',
     estimatedMin: 45,
     elapsedMin: 84,
-    status: 'active' as const,
+    status: 'active',
     defectFlag: false,
   },
-
   {
     id: 'task-wp2851',
     workpieceId: 'WP-2851',
     name: 'Walnut Bookshelf Unit',
     order: 'ORD-4418',
     stage: 'Assembly',
-    priority: 'normal' as const,
+    priority: 'normal',
     estimatedMin: 90,
     elapsedMin: 0,
-    status: 'queued' as const,
+    status: 'queued',
     defectFlag: false,
   },
   {
@@ -35,10 +50,10 @@ const initialTasks = [
     name: 'Cherry Side Table',
     order: 'ORD-4409',
     stage: 'Finishing',
-    priority: 'low' as const,
+    priority: 'low',
     estimatedMin: 60,
     elapsedMin: 0,
-    status: 'queued' as const,
+    status: 'queued',
     defectFlag: true,
   },
   {
@@ -47,10 +62,10 @@ const initialTasks = [
     name: 'Maple Coffee Table',
     order: 'ORD-4425',
     stage: 'Cutting',
-    priority: 'normal' as const,
+    priority: 'normal',
     estimatedMin: 35,
     elapsedMin: 0,
-    status: 'queued' as const,
+    status: 'queued',
     defectFlag: false,
   },
 ];
@@ -70,7 +85,7 @@ const stageColor: Record<string, string> = {
 };
 
 export default function AssignedTasksList() {
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState<AssignedTask[]>(initialTasks);
   const [activeId, setActiveId] = useState('task-wp2847');
   const [toast, setToast] = useState<string | null>(null);
 

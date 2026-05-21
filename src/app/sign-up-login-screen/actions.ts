@@ -2,7 +2,6 @@
 
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
 
 const ROLE_HOME: Record<string, string> = {
   admin: '/admin-dashboard',

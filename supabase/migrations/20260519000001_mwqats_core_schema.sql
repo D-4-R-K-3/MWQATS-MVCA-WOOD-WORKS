@@ -741,3 +741,34 @@ EXCEPTION
     WHEN OTHERS THEN
         RAISE NOTICE 'Mock data insertion failed: %', SQLERRM;
 END $$;
+
+-- ============================================================
+-- STEP 9: CREATE PROFILES FOR EXISTING AUTH USERS
+-- ============================================================
+-- This handles test accounts that may have been created before the trigger was in place
+DO $$
+BEGIN
+    -- Create profiles for any existing auth.users that don't have profiles yet
+    INSERT INTO public.user_profiles (id, email, full_name, role, is_active)
+    SELECT 
+        u.id,
+        u.email,
+        COALESCE(u.raw_user_meta_data->>'full_name', split_part(u.email, '@', 1)),
+        CASE 
+            WHEN u.email = 'sunita.kapoor@mvcawood.com' THEN 'admin'::public.user_role
+            WHEN u.email = 'marcos.reyes@mvcawood.com' THEN 'staff'::public.user_role
+            WHEN u.email = 'claire.leblanc@gmail.com' THEN 'customer'::public.user_role
+            ELSE COALESCE(u.raw_user_meta_data->>'role', 'staff')::public.user_role
+        END,
+        true
+    FROM auth.users u
+    WHERE NOT EXISTS (
+        SELECT 1 FROM public.user_profiles up WHERE up.id = u.id
+    )
+    ON CONFLICT (id) DO NOTHING;
+    
+    RAISE NOTICE 'Existing user profiles created successfully';
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE NOTICE 'Existing user profile creation failed (non-blocking): %', SQLERRM;
+END $$;

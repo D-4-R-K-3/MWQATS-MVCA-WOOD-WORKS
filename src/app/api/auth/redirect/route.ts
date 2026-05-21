@@ -86,18 +86,16 @@ export async function GET(request: NextRequest) {
     // Try to get role from user_profiles table
     let userRole = user.user_metadata?.role || 'staff';
     
-    try {
-      const { data: profileData } = await supabase
-        .from('user_profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-      
-      if (profileData?.role) {
-        userRole = profileData.role;
-      }
-    } catch (profileError) {
-      console.warn('Profile fetch failed, using metadata role:', profileError);
+    const { data: profileData, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      console.warn('Profile fetch failed, using metadata role:', profileError.message);
+    } else if (profileData?.role) {
+      userRole = profileData.role;
     }
 
     const redirectPath = ROLE_HOME[userRole] || '/staff-dashboard';
